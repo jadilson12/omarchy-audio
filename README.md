@@ -1,39 +1,44 @@
 # Omarchy Audio
 
-App nativo para macOS, feito em SwiftUI e AVFoundation, para ouvir no Mac o áudio
-que está tocando no Omarchy. Fica na barra de menus, como o Dita, e também tem
-uma janela compacta com volume, mute e visualização do sinal recebido.
+A native macOS app built with SwiftUI and AVFoundation that lets you listen to
+Omarchy's audio on your Mac. It lives in the menu bar, like Dita, and includes a
+compact window with volume controls, mute, and an incoming audio level indicator.
 
-## Abrir e conectar
+## Launch and connect
 
-Abra `build/Omarchy Audio.app` no Finder ou execute:
+Open `build/Omarchy Audio.app` in Finder, or run this from the project directory:
 
 ```bash
-open "$HOME/develop/omarchy-audio/build/Omarchy Audio.app"
+open "build/Omarchy Audio.app"
 ```
 
-Clique em **Ouvir Omarchy** e coloque uma música ou vídeo para tocar no Linux.
-O som sai no dispositivo selecionado nos Ajustes de Som do Mac. O botão ao lado
-do nome da saída abre esses ajustes. **Desconectar** encerra a captura remota;
-fechar a janela mantém o app e a transmissão na barra de menus. **Sair** encerra ambos.
+Click **Ouvir Omarchy** (Listen to Omarchy), then play music or a video on Linux.
+Audio plays through the output device selected in your Mac's Sound settings. The
+button next to the output name opens those settings. **Desconectar** (Disconnect)
+stops remote capture; closing the window keeps the app and stream running in the
+menu bar. **Sair** (Quit) stops both.
 
-O host inicial é `arch`, usando o usuário, a porta e a chave já configurados no SSH
-do macOS. O botão de engrenagem permite mudar o alias. Host e volume são preservados.
-Não é necessário iniciar a transmissão pelo Terminal nem usar o atalho `ouvir-omarchy`.
+The default host is `arch`, using the user, port, and key already configured in
+macOS SSH. Use the gear button to change the host alias. The app remembers your
+host and volume settings. There is no need to start streaming from Terminal or
+use the `ouvir-omarchy` shortcut.
 
-## Requisitos
+## Requirements
 
-- macOS 14 ou superior; este app foi validado no macOS 26 com Apple Silicon.
-- `/usr/bin/ssh` com uma conexão por chave já configurada, sem pedido de senha.
-- No Omarchy: PipeWire/PulseAudio em execução e os comandos `pactl` e `parec`.
-- Para compilar: Command Line Tools do Xcode (Swift 6). Sem pacotes externos.
+- macOS 14 or later; this app has been validated on macOS 26 with Apple Silicon.
+- `/usr/bin/ssh` with key-based authentication already configured, without password prompts.
+- On Omarchy: PipeWire/PulseAudio running, with `pactl` and `parec` available.
+- To build: Xcode Command Line Tools (Swift 6). No external packages required.
 
-O áudio usa AVAudioEngine/AVAudioSourceNode nativos: não depende de FFmpeg,
-servidor de áudio extra, captura de microfone ou driver virtual. O app não lê
-chaves privadas; o próprio OpenSSH usa a configuração existente. É uma aplicação
-local assinada ad hoc, sem notarização para distribuição pública.
+Audio uses native AVAudioEngine/AVAudioSourceNode APIs, with no dependency on
+FFmpeg, an additional audio server, microphone capture, or a virtual driver.
+The app does not read private keys; OpenSSH handles authentication using your
+existing configuration. The app is signed ad hoc for local use and is not
+notarized for public distribution.
 
-## Desenvolvimento
+## Development
+
+Run these commands from the project directory:
 
 ```bash
 swift run AudioChecks
@@ -41,35 +46,38 @@ bash scripts/build-app.sh
 open "build/Omarchy Audio.app"
 ```
 
-Para verificar a conexão real e o renderizador por seis segundos (com o app
-fechado), execute `"build/Omarchy Audio.app/Contents/MacOS/OmarchyAudio" --check-stream`.
-Esse diagnóstico toca o áudio remoto na saída do Mac, imprime os contadores de
-frames recebidos/reproduzidos e encerra a conexão, retornando erro se não houver fluxo.
+To check the live connection and audio renderer for six seconds (with the app
+closed), run `"build/Omarchy Audio.app/Contents/MacOS/OmarchyAudio" --check-stream`.
+This diagnostic plays remote audio through your Mac's output, prints received
+and played frame counts, and closes the connection. It returns an error if no
+audio stream is received.
 
-`AudioChecks` é um executável de verificação, para executar de fato as asserções
-mesmo em máquinas com apenas Command Line Tools, sem depender do runner XCTest.
-Ele cobre pacotes fragmentados, canais, sinais, underrun, overflow, concorrência
-e validação de host, incluindo a reserva contra variações da rede (16 verificações).
-Build e assinatura ficam dentro do projeto. Depois de recompilar, feche o app
-anterior e abra o `.app` novamente para carregar a nova versão.
+`AudioChecks` is a verification executable that runs assertions even on machines
+with only Command Line Tools installed, without relying on the XCTest runner.
+Its 16 checks cover fragmented packets, channels, signals, underrun, overflow,
+concurrency, host validation, and buffering against network jitter.
+Build and signing artifacts stay inside the project. After rebuilding, quit the
+running app and reopen the `.app` to load the new version.
 
-## Funcionamento e limites
+## How it works and limitations
 
-Um processo SSH dedicado executa `parec` no monitor da saída padrão do Linux.
-O app recebe PCM estéreo de 16 bits a 48 kHz, converte para Float32 e alimenta o
-renderizador nativo. Uma reserva inicial de 100 ms absorve variações da rede.
-A fila mantém no máximo 500 ms de áudio, descartando o mais antigo quando há
-acúmulo. Esse limite não representa a latência total da rede.
-O renderizador nunca espera pelo lock do produtor: em underrun ele emite silêncio.
+A dedicated SSH process runs `parec` on the monitor source of Linux's default
+audio output. The app receives 16-bit stereo PCM at 48 kHz, converts it to
+Float32, and feeds the native audio renderer. An initial 100 ms buffer absorbs
+network jitter. The queue holds at most 500 ms of audio, dropping the oldest
+frames when it fills up. This limit does not represent total network latency.
+The renderer never waits for the producer lock; on underrun, it outputs silence.
 
-O indicador mostra o sinal remoto antes do volume e do mute locais. Silêncio é
-um fluxo válido e mantém a conexão ativa. Se o SSH termina ou deixa de enviar
-dados, o app apresenta o erro e permite reconectar. Não há reconexão automática.
-Ao desconectar ou sair, o SSH dedicado é encerrado; isso fecha a captura remota.
+The level indicator shows the remote signal before local volume and mute are
+applied. Silence is a valid stream and keeps the connection active. If SSH exits
+or stops sending data, the app displays an error and lets you reconnect.
+Reconnection is not automatic. Disconnecting or quitting terminates the dedicated
+SSH process, which stops remote capture.
 
-Se mudar a saída padrão no Omarchy, desconecte e conecte novamente. A transmissão
-pode causar atraso perceptível em vídeos. O app não silencia a saída física do Linux.
-O áudio passa diretamente pela memória e não é salvo em arquivo.
+If you change Omarchy's default output, disconnect and reconnect. Streaming may
+introduce noticeable audio delay in videos. The app does not mute Linux's physical
+audio output. Audio passes directly through memory and is never saved to a file.
 
-Se o app não conectar, teste `ssh arch` no Terminal. Isso permite confirmar a
-identidade do host e corrigir a autenticação, sem inserir senhas no app.
+If the app cannot connect, try `ssh arch` in Terminal. This lets you verify the
+host's identity and resolve authentication issues without entering passwords
+in the app.
