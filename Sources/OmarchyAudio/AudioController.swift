@@ -41,15 +41,21 @@ final class AudioController: ObservableObject {
     private var configurationObserver: NSObjectProtocol?
 
     private init() {
-        host = UserDefaults.standard.string(forKey: "sshHost") ?? "arch"
+        host = UserDefaults.standard.string(forKey: "sshHost") ?? ""
         volume = UserDefaults.standard.object(forKey: "volume") as? Double ?? 0.75
     }
 
     var active: Bool { state == .connecting || state == .listening }
     var hostIsValid: Bool { SSHConnection.validHost(host.trimmingCharacters(in: .whitespacesAndNewlines)) }
+    var displayMessage: String {
+        if state == .idle && !hostIsValid {
+            return "Set your SSH host in connection settings to get started."
+        }
+        return message
+    }
     var statusLabel: String {
         switch state {
-        case .idle: return "Ready to connect"
+        case .idle: return hostIsValid ? "Ready to connect" : "Set up connection"
         case .connecting: return "Connecting…"
         case .listening: return "Connected"
         case .failed: return "Connection interrupted"
@@ -67,7 +73,7 @@ final class AudioController: ObservableObject {
         let destination = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard SSHConnection.validHost(destination) else {
             state = .failed
-            message = "Enter a valid SSH alias, such as arch, or user@host."
+            message = "Set a valid SSH alias, hostname, or user@host in connection settings."
             return
         }
         host = destination

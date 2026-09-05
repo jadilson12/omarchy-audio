@@ -74,6 +74,10 @@ final class AppWindows {
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    func closeSettings() {
+        settings?.close()
+    }
+
     private func makeWindow<Content: View>(title: String, view: Content, compact: Bool) -> NSWindow {
         let hosting = NSHostingView(rootView: view)
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: hosting.fittingSize),

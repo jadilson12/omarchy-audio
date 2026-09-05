@@ -6,11 +6,11 @@ A native macOS app built with SwiftUI and AVFoundation that lets you listen to
 Omarchy's audio on your Mac. It lives in the menu bar, like Dita, and includes a
 compact window with volume controls, mute, and an incoming audio level indicator.
 
-![Omarchy Audio connected and streaming audio to a Mac](docs/omarchy-audio.png)
+![Omarchy Audio ready for the user to configure an SSH connection](docs/omarchy-audio.png)
 
 ## Download and install
 
-Download `Omarchy-Audio-v1.0.0-macos-arm64.zip` from the
+Download `Omarchy-Audio-v1.0.1-macos-arm64.zip` from the
 [latest release](https://github.com/jadilson12/omarchy-audio/releases/latest).
 This build requires an Apple Silicon Mac (M1 or later) running macOS 14 or later.
 Extract the ZIP, then drag `Omarchy Audio.app` into Applications and open it.
@@ -27,16 +27,21 @@ Open `build/Omarchy Audio.app` in Finder, or run this from the project directory
 open "build/Omarchy Audio.app"
 ```
 
-Click **Listen to Omarchy**, then play music or a video on Linux.
+On first launch, click **Set up SSH connection**, enter your SSH alias, hostname,
+IP address, or `user@host`, and click **Save and connect**. On subsequent launches,
+click **Listen to Omarchy**, then play music or a video on Linux.
 Audio plays through the output device selected in your Mac's Sound settings. The
 button next to the output name opens those settings. **Disconnect**
 stops remote capture; closing the window keeps the app and stream running in the
 menu bar. **Quit** stops both.
 
-The default host is `arch`, using the user, port, and key already configured in
-macOS SSH. Use the gear button to change the host alias. The app remembers your
-host and volume settings. There is no need to start streaming from Terminal or
-use the `ouvir-omarchy` shortcut.
+There is no predefined host. Configure your own connection in the app, using the
+user, port, and key already configured in macOS SSH. Use the gear button to change
+the host after disconnecting. The app remembers your host and volume settings
+locally on your Mac. Existing saved hosts are preserved when updating the app.
+There is no need to start streaming from Terminal.
+
+![SSH connection settings with a user-configurable host](docs/connection-settings.png)
 
 ## Requirements
 
@@ -61,8 +66,9 @@ bash scripts/build-app.sh
 open "build/Omarchy Audio.app"
 ```
 
-To check the live connection and audio renderer for six seconds (with the app
-closed), run `"build/Omarchy Audio.app/Contents/MacOS/OmarchyAudio" --check-stream`.
+First configure your host in the app. To check the live connection and audio
+renderer for six seconds (with the app closed), run
+`"build/Omarchy Audio.app/Contents/MacOS/OmarchyAudio" --check-stream`.
 This diagnostic plays remote audio through your Mac's output, prints received
 and played frame counts, and closes the connection. It returns an error if no
 audio stream is received.
@@ -106,7 +112,8 @@ If you change Omarchy's default output, disconnect and reconnect. Streaming may
 introduce noticeable audio delay in videos. The app does not mute Linux's physical
 audio output. Audio passes directly through memory and is never saved to a file.
 
-If the app cannot connect, try `ssh arch` in Terminal. This lets you verify the
+If the app cannot connect, run `ssh YOUR_SSH_HOST` in Terminal, replacing
+`YOUR_SSH_HOST` with the host you entered in the app. This lets you verify the
 host's identity and resolve authentication issues without entering passwords
 in the app.
 

@@ -19,7 +19,8 @@ open "build/Omarchy Audio.app"
 
 To test live audio, you also need a Linux host running PipeWire/PulseAudio with
 `pactl` and `parec`, reachable over SSH using key-based authentication without
-password prompts. Set the host alias in the app's settings; the default is `arch`.
+password prompts. Configure your own SSH alias, hostname, IP address, or
+`user@host` in the app's settings. No host is configured by default.
 
 ## Making changes
 

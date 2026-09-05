@@ -65,11 +65,11 @@ check(read(jitter, frames: 3).0 == [Float(100) / 32768, Float(300) / 32768, 0], 
 jitter.receive(pcm([500, 600]))
 check(read(jitter, frames: 1).0 == [0] && jitter.statistics.queuedFrames == 1, "network underrun rearms prebuffering")
 
-check(SSHConnection.validHost("arch") && SSHConnection.validHost("user@example.com"), "SSH alias and user@host accepted")
-check(!SSHConnection.validHost("-oProxyCommand=bad") && !SSHConnection.validHost("arch; echo bad") && !SSHConnection.validHost(""),
+check(SSHConnection.validHost("linux-audio") && SSHConnection.validHost("user@example.com"), "SSH alias and user@host accepted")
+check(!SSHConnection.validHost("-oProxyCommand=bad") && !SSHConnection.validHost("linux-audio; echo bad") && !SSHConnection.validHost(""),
       "option and shell injection rejected in host field")
-let arguments = SSHConnection.arguments(host: "arch")
-check(arguments.contains("BatchMode=yes") && arguments.contains("ControlPath=none") && arguments[arguments.count - 2] == "arch",
+let arguments = SSHConnection.arguments(host: "user@example.com")
+check(arguments.contains("BatchMode=yes") && arguments.contains("ControlPath=none") && arguments[arguments.count - 2] == "user@example.com",
       "dedicated SSH transport uses existing config without password prompts")
 
 // Exercise producer and consumer together; all received frames must be either

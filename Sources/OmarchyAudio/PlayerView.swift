@@ -44,7 +44,7 @@ struct PlayerView: View {
                 .background(statusColor.opacity(0.10), in: Capsule())
 
                 HStack(spacing: 18) {
-                    endpoint("desktopcomputer", name: "Omarchy", detail: controller.host)
+                    endpoint("desktopcomputer", name: "Omarchy", detail: controller.host.isEmpty ? "Not configured" : controller.host)
                     Image(systemName: "arrow.right").font(.system(size: 16, weight: .medium)).foregroundStyle(mint.opacity(controller.active ? 1 : 0.35))
                     endpoint("headphones", name: "This Mac", detail: "Local audio")
                 }
@@ -60,7 +60,7 @@ struct PlayerView: View {
                 .animation(.easeOut(duration: 0.12), value: controller.levels)
                 .accessibilityLabel(controller.signalPresent ? "Receiving audio signal" : "No audio signal")
 
-                Text(controller.message)
+                Text(controller.displayMessage)
                     .font(.system(size: 12))
                     .foregroundStyle(controller.state == .failed ? Color.orange : Color.secondary)
                     .multilineTextAlignment(.center)
@@ -73,14 +73,20 @@ struct PlayerView: View {
             .background(Color.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 20))
             .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white.opacity(0.065)))
 
-            Button(action: controller.toggle) {
+            Button {
+                if controller.active || controller.hostIsValid {
+                    controller.toggle()
+                } else {
+                    AppWindows.shared.showSettings()
+                }
+            } label: {
                 HStack(spacing: 9) {
                     if controller.state == .connecting {
                         ProgressView().controlSize(.small).tint(Color.black.opacity(0.8))
                     } else {
                         Image(systemName: controller.active ? "stop.fill" : "play.fill").font(.system(size: 12, weight: .bold))
                     }
-                    Text(controller.active ? (controller.state == .connecting ? "Cancel connection" : "Disconnect") : "Listen to Omarchy")
+                    Text(controller.active ? (controller.state == .connecting ? "Cancel connection" : "Disconnect") : (controller.hostIsValid ? "Listen to Omarchy" : "Set up SSH connection"))
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundStyle(Color(red: 0.05, green: 0.16, blue: 0.12))
@@ -156,19 +162,28 @@ struct ConnectionSettings: View {
     var body: some View {
         Form {
             Section("Connect to Omarchy") {
-                TextField("SSH host", text: $controller.host)
+                TextField("SSH host", text: $controller.host, prompt: Text("user@example.com"))
                     .disabled(controller.active)
-                Text("Use an SSH alias such as arch. The app uses the same key, user, and port as your Terminal connection.")
+                    .accessibilityIdentifier("sshHostField")
+                Text("Enter your SSH alias, hostname, IP address, or user@host. The app uses the same key, user, and port as your Terminal connection. Your host is saved on this Mac.")
                     .font(.caption).foregroundStyle(.secondary)
-                if !controller.hostIsValid {
+                if !controller.host.isEmpty && !controller.hostIsValid {
                     Text("Enter an alias or user@host, without spaces.").font(.caption).foregroundStyle(.orange)
                 }
                 if controller.active {
                     Text("Disconnect audio before changing the host.").font(.caption).foregroundStyle(.secondary)
                 }
+                Button("Save and connect") {
+                    controller.connect()
+                    AppWindows.shared.closeSettings()
+                    AppWindows.shared.showPlayer()
+                }
+                .disabled(controller.active || !controller.hostIsValid)
+                .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier("saveConnectionButton")
             }
             Section("How to listen") {
-                Text("1. Click Listen to Omarchy.\n2. Play music or a video on Linux.\n3. Audio plays through your selected Mac output.")
+                Text("1. Enter your SSH host and click Save and connect.\n2. Play music or a video on Linux.\n3. Audio plays through your selected Mac output.")
                 Text("If you change the audio output on Omarchy, disconnect and reconnect. Network streaming may add audio delay.")
                     .font(.caption).foregroundStyle(.secondary)
             }
