@@ -39,6 +39,7 @@ jobs:
           name: Omarchy-Audio-macos-${{ runner.arch }}
           path: |
             build/release/*.zip
+            build/release/*.dmg
             build/release/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30

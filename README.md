@@ -10,10 +10,11 @@ compact window with volume controls, mute, and an incoming audio level indicator
 
 ## Download and install
 
-Download `Omarchy-Audio-v1.0.1-macos-arm64.zip` from the
+Download `Omarchy-Audio-v1.0.1-macos-arm64.dmg` from the
 [latest release](https://github.com/jadilson12/omarchy-audio/releases/latest).
 This build requires an Apple Silicon Mac (M1 or later) running macOS 14 or later.
-Extract the ZIP, then drag `Omarchy Audio.app` into Applications and open it.
+Open the DMG, drag `Omarchy Audio.app` onto the Applications shortcut, then eject
+the disk image and open the app from Applications. A ZIP download is also available.
 
 The app is signed ad hoc and is not notarized. If macOS blocks it, open
 **System Settings > Privacy & Security** and use **Open Anyway** after attempting
@@ -80,15 +81,15 @@ concurrency, host validation, and buffering against network jitter.
 Build and signing artifacts stay inside the project. After rebuilding, quit the
 running app and reopen the `.app` to load the new version.
 
-To build a ZIP for distribution, including the MIT license and a SHA-256 checksum,
+To build a ZIP and DMG for distribution, including the MIT license and SHA-256 checksums,
 run `bash scripts/package-app.sh`. Files are written to `build/release/`, and the
-ZIP filename includes the app version and the build machine's architecture.
+filenames include the app version and the build machine's architecture.
 
 ## Continuous integration
 
 The [GitHub Actions pipeline](https://github.com/jadilson12/omarchy-audio/actions/workflows/ci.yml)
 runs the audio checks, builds the release app, verifies its signature after
-packaging, and uploads the ZIP and checksum as workflow artifacts. It runs on
+packaging, and uploads the ZIP, DMG, and checksums as workflow artifacts. It runs on
 pushes to `main`, version tags, and pull requests targeting `main`, and can also
 be started manually. Artifacts are retained for 30 days; published downloads
 are available on the Releases page.

@@ -22,9 +22,5 @@ ditto -x -k "build/release/$archive" "$staging/verify"
 codesign --verify --deep --strict "$staging/verify/Omarchy Audio.app"
 cmp LICENSE "$staging/verify/LICENSE"
 
-(
-    cd build/release
-    shasum -a 256 "$archive" > SHA256SUMS.txt
-    shasum -a 256 -c SHA256SUMS.txt
-)
+bash scripts/package-dmg.sh "build/release/$archive"
 printf '\nRelease archive: %s/build/release/%s\n' "$PWD" "$archive"
