@@ -68,7 +68,7 @@ final class AppWindows {
 
     func showSettings() {
         if settings == nil {
-            settings = makeWindow(title: "Ajustes do Omarchy Audio", view: ConnectionSettings(controller: .shared), compact: false)
+            settings = makeWindow(title: "Omarchy Audio Settings", view: ConnectionSettings(controller: .shared), compact: false)
         }
         settings?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

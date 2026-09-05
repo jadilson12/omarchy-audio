@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Check and package macOS app
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Run audio checks
+        run: swift run AudioChecks
+
+      - name: Build, package, and verify app
+        run: bash scripts/package-app.sh
+
+      - name: Upload app and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: Omarchy-Audio-macos-${{ runner.arch }}
+          path: |
+            build/release/*.zip
+            build/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30

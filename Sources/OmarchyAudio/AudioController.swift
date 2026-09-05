@@ -9,7 +9,7 @@ final class AudioController: ObservableObject {
     enum State: Equatable { case idle, connecting, listening, failed }
 
     @Published private(set) var state: State = .idle
-    @Published private(set) var message = "O som do Omarchy, aqui no seu Mac."
+    @Published private(set) var message = "Omarchy's sound, right here on your Mac."
     @Published private(set) var levels = Array(repeating: Float(0), count: 36)
     @Published private(set) var elapsed: TimeInterval = 0
     @Published private(set) var outputName = NativeAudio.outputName
@@ -49,10 +49,10 @@ final class AudioController: ObservableObject {
     var hostIsValid: Bool { SSHConnection.validHost(host.trimmingCharacters(in: .whitespacesAndNewlines)) }
     var statusLabel: String {
         switch state {
-        case .idle: return "Pronto para conectar"
-        case .connecting: return "Conectando…"
-        case .listening: return "Conectado"
-        case .failed: return "Conexão interrompida"
+        case .idle: return "Ready to connect"
+        case .connecting: return "Connecting…"
+        case .listening: return "Connected"
+        case .failed: return "Connection interrupted"
         }
     }
     var duration: String {
@@ -67,12 +67,12 @@ final class AudioController: ObservableObject {
         let destination = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard SSHConnection.validHost(destination) else {
             state = .failed
-            message = "Informe um alias SSH válido, como arch, ou usuário@host."
+            message = "Enter a valid SSH alias, such as arch, or user@host."
             return
         }
         host = destination
         state = .connecting
-        message = "Abrindo a conexão com \(destination)…"
+        message = "Connecting to \(destination)…"
         elapsed = 0
         receivedFrames = 0
         playedFrames = 0
@@ -112,7 +112,7 @@ final class AudioController: ObservableObject {
                 Task { @MainActor [weak self] in
                     guard let self, self.session == id else { return }
                     let detail = errorBuffer.text
-                    self.fail(detail.isEmpty ? "O Omarchy encerrou a transmissão. Tente conectar novamente." : Self.friendlyError(detail))
+                    self.fail(detail.isEmpty ? "Omarchy ended the stream. Try connecting again." : Self.friendlyError(detail))
                 }
             }
             self.process = process
@@ -131,19 +131,19 @@ final class AudioController: ObservableObject {
                     do {
                         try self.player?.engine.start()
                         self.outputName = NativeAudio.outputName
-                    } catch { self.fail("A saída de áudio mudou. Conecte novamente: \(error.localizedDescription)") }
+                    } catch { self.fail("The audio output changed. Reconnect. Error: \((error as NSError).domain) (\((error as NSError).code)).") }
                 }
             }
             timer = Timer.scheduledTimer(withTimeInterval: 0.12, repeats: true) { [weak self] _ in
                 Task { @MainActor in self?.refresh() }
             }
-        } catch { fail("Não foi possível iniciar: \(error.localizedDescription)") }
+        } catch { fail("Could not start playback. Check your audio output and SSH connection. Error: \((error as NSError).domain) (\((error as NSError).code)).") }
     }
 
     func disconnect() {
         tearDown()
         state = .idle
-        message = "O som do Omarchy, aqui no seu Mac."
+        message = "Omarchy's sound, right here on your Mac."
         levels = Array(repeating: 0, count: 36)
         signalPresent = false
         elapsed = 0
@@ -191,28 +191,28 @@ final class AudioController: ObservableObject {
             let hasSignal = stats.peak > 0.001 && now - stats.lastPacket < 1
             if hasSignal { lastSignalAt = now }
             signalPresent = now - lastSignalAt < 1.5
-            message = signalPresent ? "Reproduzindo a saída de áudio do Omarchy." : "Conectado. Coloque algo para tocar no Omarchy."
+            message = signalPresent ? "Playing Omarchy's audio output." : "Connected. Play something on Omarchy."
             let level = hasSignal ? max(0, min(1, (20 * log10(max(stats.peak, 0.0001)) + 55) / 55)) : 0
             levels.removeFirst()
             levels.append(level)
-            if now - stats.lastPacket > 10 { fail("A transmissão parou de enviar áudio. Verifique a rede e tente novamente.") }
+            if now - stats.lastPacket > 10 { fail("The stream stopped sending audio. Check your network and try again.") }
         } else if now - startedAt > 15 {
-            fail("O Omarchy não enviou áudio. Confira se o PipeWire está ativo e se o SSH conecta sem pedir senha.")
+            fail("Omarchy did not send audio. Make sure PipeWire is running and SSH connects without a password prompt.")
         }
     }
 
     private static func friendlyError(_ error: String) -> String {
         if error.contains("Permission denied") {
-            return "O SSH não autorizou a conexão. Teste ssh arch no Terminal e confira a chave de acesso."
+            return "SSH authentication failed. Test your SSH host in Terminal and check your access key."
         }
         if error.contains("Host key verification failed") {
-            return "Confirme a identidade deste host pelo Terminal antes de conectar pelo app."
+            return "Verify this host's identity in Terminal before connecting through the app."
         }
         if error.contains("Could not resolve") || error.contains("Connection refused") || error.contains("timed out") || error.contains("No route to host") {
-            return "Não foi possível alcançar o Omarchy. Confira se a máquina está ligada e acessível pela rede."
+            return "Could not reach Omarchy. Make sure the machine is on and reachable over the network."
         }
-        if error.contains("not found") { return "O Omarchy precisa dos comandos pactl e parec instalados para transmitir o áudio." }
-        return String(error.prefix(500))
+        if error.contains("not found") { return "Omarchy needs pactl and parec installed to stream audio." }
+        return "SSH could not start the audio stream. Test your host in Terminal and check that PipeWire is running."
     }
 
     func openSoundSettings() {

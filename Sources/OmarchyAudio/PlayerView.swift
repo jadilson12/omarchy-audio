@@ -25,14 +25,14 @@ struct PlayerView: View {
                     .background(mint.opacity(0.10), in: RoundedRectangle(cornerRadius: 13))
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Omarchy Audio").font(.system(size: 17, weight: .semibold))
-                    Text("Seu Linux. Seu som. Seu Mac.").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Text("Your Linux. Your sound. Your Mac.").font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button {
                     AppWindows.shared.showSettings()
                 } label: { Image(systemName: "gearshape").font(.system(size: 15)) }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
-                .help("Ajustes de conexão").accessibilityLabel("Ajustes de conexão")
+                .help("Connection settings").accessibilityLabel("Connection settings")
             }
 
             VStack(spacing: 20) {
@@ -46,7 +46,7 @@ struct PlayerView: View {
                 HStack(spacing: 18) {
                     endpoint("desktopcomputer", name: "Omarchy", detail: controller.host)
                     Image(systemName: "arrow.right").font(.system(size: 16, weight: .medium)).foregroundStyle(mint.opacity(controller.active ? 1 : 0.35))
-                    endpoint("headphones", name: "Este Mac", detail: "Áudio local")
+                    endpoint("headphones", name: "This Mac", detail: "Local audio")
                 }
 
                 HStack(alignment: .center, spacing: 3) {
@@ -58,7 +58,7 @@ struct PlayerView: View {
                 }
                 .frame(height: 43)
                 .animation(.easeOut(duration: 0.12), value: controller.levels)
-                .accessibilityLabel(controller.signalPresent ? "Recebendo sinal de áudio" : "Sem sinal de áudio")
+                .accessibilityLabel(controller.signalPresent ? "Receiving audio signal" : "No audio signal")
 
                 Text(controller.message)
                     .font(.system(size: 12))
@@ -80,7 +80,7 @@ struct PlayerView: View {
                     } else {
                         Image(systemName: controller.active ? "stop.fill" : "play.fill").font(.system(size: 12, weight: .bold))
                     }
-                    Text(controller.active ? (controller.state == .connecting ? "Cancelar conexão" : "Desconectar") : "Ouvir Omarchy")
+                    Text(controller.active ? (controller.state == .connecting ? "Cancel connection" : "Disconnect") : "Listen to Omarchy")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundStyle(Color(red: 0.05, green: 0.16, blue: 0.12))
@@ -98,38 +98,38 @@ struct PlayerView: View {
                             .frame(width: 19)
                     }
                     .buttonStyle(.plain).foregroundStyle(controller.muted ? .secondary : mint)
-                    .help(controller.muted ? "Ativar som" : "Silenciar")
-                    .accessibilityLabel(controller.muted ? "Ativar som" : "Silenciar")
+                    .help(controller.muted ? "Unmute" : "Mute")
+                    .accessibilityLabel(controller.muted ? "Unmute" : "Mute")
                     Slider(value: $controller.volume, in: 0...1).tint(mint)
-                        .accessibilityLabel("Volume de reprodução")
+                        .accessibilityLabel("Playback volume")
                     Text("\(Int(controller.volume * 100))%")
                         .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
                         .frame(width: 32, alignment: .trailing)
                 }
                 HStack(spacing: 5) {
-                    Text("Saída:").foregroundStyle(.tertiary)
+                    Text("Output:").foregroundStyle(.tertiary)
                     Text(controller.outputName).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                     Spacer(minLength: 4)
                     Button(action: controller.openSoundSettings) { Image(systemName: "arrow.up.right") }
                         .buttonStyle(.plain).foregroundStyle(.secondary)
-                        .help("Escolher saída nos Ajustes de Som").accessibilityLabel("Escolher saída de som")
+                        .help("Choose an output in Sound settings").accessibilityLabel("Choose audio output")
                 }
                 .font(.system(size: 10))
             }
 
             Divider().overlay(Color.white.opacity(0.03))
             HStack {
-                Label(controller.state == .listening ? "Estéreo · 48 kHz" : "Conexão via SSH", systemImage: "lock.shield")
+                Label(controller.state == .listening ? "Stereo · 48 kHz" : "SSH connection", systemImage: "lock.shield")
                 Spacer()
                 if controller.state == .listening {
                     Text(controller.duration).monospacedDigit()
                 }
                 if inMenu {
-                    Button("Abrir") {
+                    Button("Open") {
                         AppWindows.shared.showPlayer()
                     }.buttonStyle(.plain)
                 }
-                Button("Sair") { NSApp.terminate(nil) }.buttonStyle(.plain)
+                Button("Quit") { NSApp.terminate(nil) }.buttonStyle(.plain)
                     .keyboardShortcut("q", modifiers: .command)
             }
             .font(.system(size: 10)).foregroundStyle(.secondary)
@@ -155,21 +155,21 @@ struct ConnectionSettings: View {
     @ObservedObject var controller: AudioController
     var body: some View {
         Form {
-            Section("Conexão com o Omarchy") {
-                TextField("Host SSH", text: $controller.host)
+            Section("Connect to Omarchy") {
+                TextField("SSH host", text: $controller.host)
                     .disabled(controller.active)
-                Text("Use o alias configurado no seu SSH, como arch. O app usa a mesma chave, usuário e porta da conexão pelo Terminal.")
+                Text("Use an SSH alias such as arch. The app uses the same key, user, and port as your Terminal connection.")
                     .font(.caption).foregroundStyle(.secondary)
                 if !controller.hostIsValid {
-                    Text("Informe um alias ou usuário@host, sem espaços.").font(.caption).foregroundStyle(.orange)
+                    Text("Enter an alias or user@host, without spaces.").font(.caption).foregroundStyle(.orange)
                 }
                 if controller.active {
-                    Text("Desconecte o áudio antes de alterar o host.").font(.caption).foregroundStyle(.secondary)
+                    Text("Disconnect audio before changing the host.").font(.caption).foregroundStyle(.secondary)
                 }
             }
-            Section("Como ouvir") {
-                Text("1. Clique em Ouvir Omarchy.\n2. Inicie uma música ou vídeo no Linux.\n3. O som toca na saída selecionada no Mac.")
-                Text("Se mudar a saída de áudio no Omarchy, desconecte e conecte novamente. A transmissão pela rede pode acrescentar atraso ao som.")
+            Section("How to listen") {
+                Text("1. Click Listen to Omarchy.\n2. Play music or a video on Linux.\n3. Audio plays through your selected Mac output.")
+                Text("If you change the audio output on Omarchy, disconnect and reconnect. Network streaming may add audio delay.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

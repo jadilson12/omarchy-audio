@@ -5,6 +5,8 @@
     <key>CFBundleIdentifier</key><string>dev.jadilson.omarchy-audio</string>
     <key>CFBundleName</key><string>Omarchy Audio</string>
     <key>CFBundleDisplayName</key><string>Omarchy Audio</string>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleLocalizations</key><array><string>en</string></array>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>1.0.0</string>
     <key>CFBundleVersion</key><string>1</string>

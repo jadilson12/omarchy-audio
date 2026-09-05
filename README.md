@@ -1,8 +1,23 @@
 # Omarchy Audio
 
+[![CI](https://github.com/jadilson12/omarchy-audio/actions/workflows/ci.yml/badge.svg)](https://github.com/jadilson12/omarchy-audio/actions/workflows/ci.yml)
+
 A native macOS app built with SwiftUI and AVFoundation that lets you listen to
 Omarchy's audio on your Mac. It lives in the menu bar, like Dita, and includes a
 compact window with volume controls, mute, and an incoming audio level indicator.
+
+![Omarchy Audio connected and streaming audio to a Mac](docs/omarchy-audio.png)
+
+## Download and install
+
+Download `Omarchy-Audio-v1.0.0-macos-arm64.zip` from the
+[latest release](https://github.com/jadilson12/omarchy-audio/releases/latest).
+This build requires an Apple Silicon Mac (M1 or later) running macOS 14 or later.
+Extract the ZIP, then drag `Omarchy Audio.app` into Applications and open it.
+
+The app is signed ad hoc and is not notarized. If macOS blocks it, open
+**System Settings > Privacy & Security** and use **Open Anyway** after attempting
+to launch it, if you trust the download.
 
 ## Launch and connect
 
@@ -12,11 +27,11 @@ Open `build/Omarchy Audio.app` in Finder, or run this from the project directory
 open "build/Omarchy Audio.app"
 ```
 
-Click **Ouvir Omarchy** (Listen to Omarchy), then play music or a video on Linux.
+Click **Listen to Omarchy**, then play music or a video on Linux.
 Audio plays through the output device selected in your Mac's Sound settings. The
-button next to the output name opens those settings. **Desconectar** (Disconnect)
+button next to the output name opens those settings. **Disconnect**
 stops remote capture; closing the window keeps the app and stream running in the
-menu bar. **Sair** (Quit) stops both.
+menu bar. **Quit** stops both.
 
 The default host is `arch`, using the user, port, and key already configured in
 macOS SSH. Use the gear button to change the host alias. The app remembers your
@@ -59,6 +74,19 @@ concurrency, host validation, and buffering against network jitter.
 Build and signing artifacts stay inside the project. After rebuilding, quit the
 running app and reopen the `.app` to load the new version.
 
+To build a ZIP for distribution, including the MIT license and a SHA-256 checksum,
+run `bash scripts/package-app.sh`. Files are written to `build/release/`, and the
+ZIP filename includes the app version and the build machine's architecture.
+
+## Continuous integration
+
+The [GitHub Actions pipeline](https://github.com/jadilson12/omarchy-audio/actions/workflows/ci.yml)
+runs the audio checks, builds the release app, verifies its signature after
+packaging, and uploads the ZIP and checksum as workflow artifacts. It runs on
+pushes to `main`, version tags, and pull requests targeting `main`, and can also
+be started manually. Artifacts are retained for 30 days; published downloads
+are available on the Releases page.
+
 ## How it works and limitations
 
 A dedicated SSH process runs `parec` on the monitor source of Linux's default
@@ -81,3 +109,12 @@ audio output. Audio passes directly through memory and is never saved to a file.
 If the app cannot connect, try `ssh arch` in Terminal. This lets you verify the
 host's identity and resolve authentication issues without entering passwords
 in the app.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, checks, and pull
+request guidelines.
+
+## License
+
+Licensed under the [MIT License](LICENSE).

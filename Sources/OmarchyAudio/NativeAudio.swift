@@ -35,7 +35,7 @@ final class NativeAudio {
         var device = AudioDeviceID(0)
         var size = UInt32(MemoryLayout<AudioDeviceID>.size)
         guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &device) == noErr else {
-            return "Saída padrão do macOS"
+            return "Default macOS output"
         }
         address.mSelector = kAudioObjectPropertyName
         var name: CFString = "" as CFString
@@ -44,7 +44,7 @@ final class NativeAudio {
             AudioObjectGetPropertyData(device, &address, 0, nil, &size, pointer)
         }
         guard status == noErr else {
-            return "Saída padrão do macOS"
+            return "Default macOS output"
         }
         return name as String
     }
